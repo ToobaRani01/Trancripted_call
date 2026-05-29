@@ -84,18 +84,4 @@ If `GOOGLE_API_KEY` is configured, the app uses LangChain Gemini to generate the
 - `static/` — frontend CSS and JS
 - `templates/index.html` — UI template
 
-## 📦 Dependencies
-
-- Flask
-- Flask-SocketIO
-- Flask-SQLAlchemy
-- python-dotenv
-
-## Notes
-
-- No external AI key is required.
-- The app uses browser speech recognition for transcription.
-
----
-
 **Built with ❤️ using Flask, WebRTC, and llm transcript summarization**
