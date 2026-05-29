@@ -7,7 +7,7 @@ A web-based call application with live browser transcription and llm summary gen
 - **Video call** with WebRTC peer-to-peer streaming
 - **Secure calls** with unique call codes and passwords
 - **Live transcription** from browser microphone input
-- **Local summary generation** from transcript data
+- **llm summary generation** from transcript data
 - **Key points and action items** extracted from conversation
 - **Downloadable** transcript and summary output
 
