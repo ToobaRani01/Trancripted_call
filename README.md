@@ -24,7 +24,7 @@ A web-based call application with live browser transcription and llm summary gen
    ```bash
    pip install -r requirements.txt
    ```
-4. Add a secret key and optionally a Gemini API key to `.env`:
+4. Add a secret key and  a Gemini API key to `.env` file  and .env file you have to create in root Dir:
    ```bash
    SECRET_KEY=your-secure-secret-key
    GOOGLE_API_KEY=your-google-generative-ai-key
