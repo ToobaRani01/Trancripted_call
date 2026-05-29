@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Summary - Video Call & AI Summary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen active">
+            <div class="home-content">
+                <div class="logo">
+                    <h1>📞 Call Summary</h1>
+                    <p>Video Calls with AI-Powered Summaries</p>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="showCreateCall()">
+                        <span class="icon">➕</span> Create Call
+                    </button>
+                    <button class="btn btn-secondary" onclick="showJoinCall()">
+                        <span class="icon">🔗</span> Join Call
+                    </button>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">
+                        <span class="feature-icon">🎥</span>
+                        <h3>HD Video Calls</h3>
+                        <p>Crystal clear video with low latency</p>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">✍️</span>
+                        <h3>Live Transcript</h3>
+                        <p>Real-time conversation transcription</p>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">🤖</span>
+                        <h3>AI Summary</h3>
+                        <p>Auto-generated summaries with key points</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Device Check Screen -->
+        <div id="deviceCheckScreen" class="screen">
+            <div class="device-check-container">
+                <div class="device-check-icon">🔧</div>
+                <h2>Check Your Devices</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 25px;">We need to verify your camera and microphone</p>
+                
+                <div id="cameraStatus" class="device-status">
+                    <div class="device-status-icon">⏳</div>
+                    <div class="device-status-text">
+                        <div class="device-status-label">Camera</div>
+                        <div class="device-status-detail">Checking...</div>
+                    </div>
+                </div>
+                
+                <div id="microphoneStatus" class="device-status">
+                    <div class="device-status-icon">⏳</div>
+                    <div class="device-status-text">
+                        <div class="device-status-label">Microphone</div>
+                        <div class="device-status-detail">Checking...</div>
+                    </div>
+                </div>
+                
+                <div class="device-check-buttons">
+                    <button class="btn btn-secondary small" onclick="checkDevicesAgain()">
+                        🔄 Check Again
+                    </button>
+                    <button id="proceedButton" class="btn btn-primary small" onclick="proceedWithCall()" disabled>
+                        ✓ Proceed
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Call Screen -->
+        <div id="createCallScreen" class="screen">
+            <div class="form-container">
+                <div class="form-header">
+                    <button class="back-btn" onclick="showHome()">← Back</button>
+                    <h2>Create New Call</h2>
+                </div>
+                
+                <form id="createCallForm" onsubmit="createCall(event)">
+                    <div class="form-group">
+                        <label for="creatorName">Your Name</label>
+                        <input 
+                            type="text" 
+                            id="creatorName" 
+                            placeholder="Enter your name" 
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="creatorPassword">Call Password</label>
+                        <input 
+                            type="password" 
+                            id="creatorPassword" 
+                            placeholder="Create a password (share with guest)" 
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Create Call
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Join Call Screen -->
+        <div id="joinCallScreen" class="screen">
+            <div class="form-container">
+                <div class="form-header">
+                    <button class="back-btn" onclick="showHome()">← Back</button>
+                    <h2>Join Call</h2>
+                </div>
+                
+                <form id="joinCallForm" onsubmit="joinCall(event)">
+                    <div class="form-group">
+                        <label for="callCode">Call Code</label>
+                        <input 
+                            type="text" 
+                            id="callCode" 
+                            placeholder="Enter call code" 
+                            required
+                            maxlength="20"
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="guestName">Your Name</label>
+                        <input 
+                            type="text" 
+                            id="guestName" 
+                            placeholder="Enter your name" 
+                            required
+                        >
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="joinPassword">Call Password</label>
+                        <input 
+                            type="password" 
+                            id="joinPassword" 
+                            placeholder="Enter the password provided by caller" 
+                            required
+                        >
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block">
+                        Join Call
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Call Screen -->
+        <div id="callScreen" class="screen">
+            <div class="call-container" id="callContainer">
+                <!-- Side Panel: transcript, notes, summary (hidden until user opens) -->
+                <div id="sidePanel" class="left-panel side-panel-hidden">
+                    <div class="panel-header">
+                        <h3>📝 Transcript & Notes</h3>
+                        <div class="panel-header-actions">
+                            <button class="refresh-btn" onclick="refreshAllInsights()" title="Refresh notes & summary">
+                                🔄
+                            </button>
+                            <button class="close-panel-btn" onclick="hideSidePanel()" title="Close panel">✕</button>
+                        </div>
+                    </div>
+
+                    <div class="panel-tabs">
+                        <button class="panel-tab active" data-tab="transcript" onclick="switchSidePanelTab('transcript')">Transcript</button>
+                        <button class="panel-tab" data-tab="notes" onclick="switchSidePanelTab('notes')">Notes</button>
+                        <button class="panel-tab" data-tab="summary" onclick="switchSidePanelTab('summary')">Summary</button>
+                    </div>
+                    
+                    <div class="summary-content">
+                        <div id="tab-transcript" class="panel-tab-content active">
+                            <div id="liveTranscript" class="transcript-section">
+                                <p class="panel-hint">Speech is transcribed automatically (1-way or 2-way).</p>
+                                <div id="interimTranscript" class="interim-text"></div>
+                                <div id="transcriptMessages" class="messages-list">
+                                    <p class="placeholder">Conversation will appear here...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-notes" class="panel-tab-content">
+                            <div id="notesSection" class="notes-section">
+                                <div id="notesText" class="summary-text">
+                                    <p class="placeholder">Say "show notes" or tap Notes tab to generate...</p>
+                                </div>
+                                <div class="key-points">
+                                    <h5>Meeting Notes:</h5>
+                                    <ul id="notesList"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="tab-summary" class="panel-tab-content">
+                            <div id="summarySection" class="summary-section">
+                                <div id="summaryText" class="summary-text">
+                                    <p class="placeholder">Say "show summary" or tap Summary tab...</p>
+                                </div>
+                                <div id="keyPoints" class="key-points">
+                                    <h5>Key Points:</h5>
+                                    <ul id="keyPointsList"></ul>
+                                </div>
+                                <div id="actionItems" class="key-points">
+                                    <h5>Action Items:</h5>
+                                    <ul id="actionItemsList"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Panel - Video -->
+                <div class="right-panel" id="rightPanel">
+                    <div class="video-container">
+                        <div class="video-wrapper">
+                            <video id="localVideo" autoplay playsinline muted></video>
+                            <span id="localLabel" class="video-label">You</span>
+                        </div>
+                        
+                        <div class="video-wrapper">
+                            <video id="remoteVideo" autoplay playsinline></video>
+                            <span id="remoteLabel" class="video-label">Guest</span>
+                        </div>
+                    </div>
+                    
+                    <div class="call-info">
+                        <div class="call-code">
+                            <strong>Call Code:</strong>
+                            <span id="displayCallCode">-</span>
+                            <button class="copy-btn" onclick="copyCallCode()" title="Copy">📋</button>
+                        </div>
+                        <div class="participant-count">
+                            <strong>Participants:</strong>
+                            <span id="participantCount">1</span>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="toggleInsightsPanel" class="control-btn insights-btn" onclick="toggleSidePanel()" title="Show transcript, notes & summary">
+                            📝
+                        </button>
+                        <button id="toggleAudio" class="control-btn" onclick="toggleAudio()" title="Toggle Microphone">
+                            🎤
+                        </button>
+                        <button id="toggleVideo" class="control-btn" onclick="toggleVideo()" title="Toggle Camera">
+                            📹
+                        </button>
+                        <button id="toggleScreen" class="control-btn" onclick="toggleScreen()" title="Share Screen">
+                            🖥️
+                        </button>
+                        <button id="endCall" class="control-btn end-call-btn" onclick="endCall()" title="End Call">
+                            ❌
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Call Ended Screen -->
+        <div id="callEndedScreen" class="screen">
+            <div class="ended-container">
+                <h2>Call Ended</h2>
+                
+                <div class="final-notes">
+                    <h3>📒 Meeting Notes</h3>
+                    <div id="finalNotesText" class="summary-text"></div>
+                    <ul id="finalNotesList"></ul>
+                </div>
+
+                <div class="final-summary">
+                    <h3>📋 Final Summary</h3>
+                    <div id="finalSummaryText" class="summary-text"></div>
+                    
+                    <div id="finalKeyPoints" class="key-points">
+                        <h4>Key Points:</h4>
+                        <ul id="finalKeyPointsList"></ul>
+                    </div>
+                </div>
+                
+                <div class="final-transcript">
+                    <h3>📝 Full Transcript</h3>
+                    <div id="finalTranscript" class="transcript-section"></div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="downloadTranscript()">
+                        📥 Download Transcript
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadSummary()">
+                        📥 Download Summary
+                    </button>
+                    <button class="btn btn-tertiary" onclick="showHome()">
+                        🏠 Back to Home
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner" style="display:none;">
+            <div class="spinner"></div>
+            <p id="loadingText">Loading...</p>
+        </div>
+
+        <!-- Notifications -->
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/webrtc.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/transcription.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
